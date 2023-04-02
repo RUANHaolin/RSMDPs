@@ -14,7 +14,7 @@ This repository includes
 
 ### Data files
 
-For the experiment "Improvements on Percentiles", the instance data files are located in the folder [exp1_samples_GW](exp1_samples_GW), where the random instances generated for the Multi-Item Newsvendor Problem and the Hospital Quota Allocation Problem are stored. 
+For the experiment "Improvements on Percentiles", the instance data files are located in the folder [exp_models](exp_models), where the random instances generated under the environments *river swim*, *machine replacement* and *grid world* are stored in the folders [exp1_samples_RiSw](exp_models/exp1_samples_RiSw), [exp1_samples_MR](exp_models/exp1_samples_MR) and [exp1_samples_GW](exp_models/exp1_samples_GW), respectively. 
 
 <!--### Data formats
 The folder [formats](formats) contains a [formats.md](formats/formats.md) file that describes the formats of the instance data files of the Multi-Item Newsvendor Problem and the Hospital Quota Allocation Problem.-->
