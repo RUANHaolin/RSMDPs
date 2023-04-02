@@ -18,34 +18,21 @@ For both the experiments "Improvements on Percentiles" and "Target-Oriented Feat
 	
 
 
-### Results
-The folder [results](results) contains the results of the experiments, as well as a [README.md](results/README.md) file that describes the results.
-
+### Source codes
+All our experiments are implemented in C++. The folder [exp_models](exp_models) contains all the source code files for the experiments "Improvements on Percentiles" and "Target-Oriented Feature", and the folder [exp_algorithms](exp_algorithms) contains those for the experiment "Scalability of Different Algorithms".
 
 ## Data Formats
 
-### Multi-Item Newsvendor Problem
+### Improvements on Percentiles
 
-To generate a random instance in the Multi-Item Newsvendor Problem, it is sufficient to generate the four random variables as follows (where the notations are consistent with those in the paper):
+The folders [exp1_samples_RiSw](exp_models/exp1_samples_RiSw) [exp1_samples_MR](exp_models/exp1_samples_MR) and [exp1_samples_GW](exp_models/exp1_samples_GW) contain the .csv files that record the estimated transition kernels associated with different lengths of trajectories, where the lengths are as indicated by the file names (e.g., "SamSiz11MaxSte10.csv" corresponds to the transition kernel estimated based on a trajectory with length 11$\times$10=110, and "SamSiz3MaxSte100.csv" corresponds to the one with length 3$\times$100=300).
 
-1. $\boldsymbol{v}\in\mathbb{R}^{I}$: the unit selling prices of the  items.
-1. $\boldsymbol{\mu}\in\mathbb{R}^{I}$: the mean demand.
-1. $\boldsymbol{\sigma}\in\mathbb{R}^{I}$: the standard deviation of the demand.
-1. $\boldsymbol{\Sigma}\in\mathbb{R}^{I\times I}$: the covariance matrix of the demand.
+### Target-Oriented Feature
 
-The instances for different settings are organized in different locations, and the settings are indicated by the folder names along the path; for example, the folder with the path **ADRO/data/newsvendor/table1/11_items/delta025** contains the $100$ instances for the results in Table $1$ in the case of $I=11, \Delta=0.25$, and the one **ADRO/data/newsvendor/table2/07_items** contains the $100$ instances for the results in Table $2$ in the case of $I=7$.
+For the *river swim* environment, the folder [exp2_samples_RiSw](exp_models/exp2_samples_RiSw) contains two folders---[train](exp_models/exp2_samples_RiSw/train) and [test](exp_models/exp2_samples_RiSw/test). The .csv file that records the true transition kernel is in the former folder, while the files for the polluted kernels are in the latter folder. The files for the *machine replacement* and the *grid world* environments are in the folders [exp2_samples_MR](exp_models/exp2_samples_MR) and [exp2_samples_GW](exp_models/exp2_samples_GW), respectively.
 
 
-### Hospital Quota Allocation Problem
 
-A random instance in the Hospital Quota Allocation Problem consists of the following data:
-
-1. The number of EAIs
-who start hospitalization on day $k$ and staying for at least $l$ days, for all $k\in\mathcal{T}^-$ and $l\in[L]$.
-1. The
-number of EMIs who stay for at least $l\in[L]$ days starting from day $k\in\mathcal{T}^-$, for all $k\in\mathcal{T}^-$ and $l\in[L]$.
-
-The folders **ADRO/data/hospital/EAIs** and **ADRO/data/hospital/EMIs** store the 50 instances of numbers of EAIs and EMIs, respectively. An instance is stored in the format of a $13\times 16$ table, where the first column is the index of day when the patients start hospitalization and the second column is the day of week (e.g., $3$ for Wednesday, $7$ for Sunday) of this day. The number at the $t$-th column $(t = 3,4,\cdots,16)$ indicates the number of patients that will stay at least $17-t$ days. For example, in the file **ADRO/data/hospital/EAIs/instance03.csv**, the number at the $2$-nd row, $4$-th column means that in our $3$-rd random instance, the number of EAIs that starts hospitalization on day $-12$ and will stay at least $13$ days is $23.29$; while in the file **ADRO/data/hospital/EMIs/instance21.csv**, the number at the $5$-th row, $11$-th column means that in our $21$-st random instance, the number of EMIs that starts hospitalization on day $-9$ and will stay at least $6$ days is $22.93$.
 
 
 
