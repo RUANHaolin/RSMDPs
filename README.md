@@ -8,13 +8,13 @@ This repository contains supporting material for the paper [Robust Satisficing M
 
 This repository includes
 
-1. Instance data for experiments "".
-1. Files containing sample results for the Multi-Item Newsvendor Problem, the Hospital Quota Allocation Problem and the Multi-Stage Inventory Control Problem.
-<!--1. Files describing the data formats and results.-->
+1. Instance data for experiments "Improvements on Percentiles" and "Target-Oriented Feature".
+1. Source codes for all our experiments.
+
 
 ### Data files
 
-Instance data files are located in the folder [data](data), where the random instances generated for the Multi-Item Newsvendor Problem and the Hospital Quota Allocation Problem are stored. 
+For the experiment "Improvements on Percentiles", the instance data files are located in the folder [exp1_samples_GW](exp1_samples_GW), where the random instances generated for the Multi-Item Newsvendor Problem and the Hospital Quota Allocation Problem are stored. 
 
 <!--### Data formats
 The folder [formats](formats) contains a [formats.md](formats/formats.md) file that describes the formats of the instance data files of the Multi-Item Newsvendor Problem and the Hospital Quota Allocation Problem.-->
