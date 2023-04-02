@@ -25,7 +25,7 @@ All our experiments are implemented in C++. The folder [exp_models](exp_models) 
 
 ### Improvements on Percentiles
 
-The folders [exp1_samples_RiSw](exp_models/exp1_samples_RiSw) [exp1_samples_MR](exp_models/exp1_samples_MR) and [exp1_samples_GW](exp_models/exp1_samples_GW) contain the .csv files that record the estimated transition kernels associated with different lengths of trajectories, where the lengths are as indicated by the file names (e.g., "SamSiz11MaxSte10.csv" corresponds to the transition kernel estimated based on a trajectory with length 11$\times$10=110, and "SamSiz3MaxSte100.csv" corresponds to the one with length 3$\times$100=300).
+The folders [exp1_samples_RiSw](exp_models/exp1_samples_RiSw) [exp1_samples_MR](exp_models/exp1_samples_MR) and [exp1_samples_GW](exp_models/exp1_samples_GW) contain the .csv files that record the estimated transition kernels associated with different lengths of trajectories, where the lengths are as indicated by the file names (e.g., "SamSiz11MaxSte10.csv" corresponds to the transition kernel estimated based on a trajectory with length $11\times 10=110$, and "SamSiz3MaxSte100.csv" corresponds to the one with length $3 \times 100=300$).
 
 ### Target-Oriented Feature
 
