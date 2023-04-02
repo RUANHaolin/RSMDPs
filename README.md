@@ -1,35 +1,14 @@
-# ADRO
+# Robust Satisficing MDPs
 
-[![INFORMS Journal on Computing Logo](https://INFORMSJoC.github.io/logos/INFORMS_Journal_on_Computing_Header.jpg)](https://pubsonline.informs.org/journal/ijoc)
 
-This archive is distributed in association with the [INFORMS Journal on Computing](https://pubsonline.informs.org/journal/ijoc) under the under the [CC BY License](LICENSE).
+This repository contains supporting material for the paper [Robust Satisficing MDPs](https://doi.org/????) by H. Ruan, S. Zhou, Z. Chen and C. P. Ho.
 
-This repository contains supporting material for the paper [Adjustable Distributionally Robust Optimization with Infinitely Constrained Ambiguity Sets](https://doi.org/????) by H. Ruan, Z. Chen and C. P. Ho.
-
-## Cite
-
-To cite this data, please cite the [research article](https://doi.org/) and the data itself, using the following DOI.
-
-[![DOI](https://zenodo.org/badge/DOI/XX.XXXX/zenodo.XXXXXXX.svg)](https://doi.org/XX.XXXX/zenodo.XXXXXXX)
-
-Below is the BibTex for citing the data.
-
-```
-@article{ruan2022adjustable,
-  author =      {Ruan, Haolin and Chen, Zhi and Ho, Chin Pang},
-  publisher =   {INFORMS Journal on Computing},
-  title =       {Adjustable Distributionally Robust Optimization with Infinitely Constrained Ambiguity Sets},
-  year =        {2022},
-  doi =         {XX.XX/zenodo.XXXXXXX},
-  url =         {https://github.com/INFORMSJoC/2022.XXXX},
-}  
-```
 
 ## Content
 
 This repository includes
 
-1. Instance data for the Multi-Item Newsvendor Problem and the Hospital Quota Allocation Problem.
+1. Instance data for experiments "".
 1. Files containing sample results for the Multi-Item Newsvendor Problem, the Hospital Quota Allocation Problem and the Multi-Stage Inventory Control Problem.
 <!--1. Files describing the data formats and results.-->
 
