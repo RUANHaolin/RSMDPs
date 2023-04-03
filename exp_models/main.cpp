@@ -991,21 +991,21 @@ int main() {
     
     exp1_RiSW();
         
-//    exp1_MR();
+    exp1_MR();
         
-//    exp1_GW();
+    exp1_GW();
     
-//    exp2_RiSW();
+    exp2_RiSW();
     
-//    exp2_MR();
+    exp2_MR();
     
-//    exp2_GW();
+    exp2_GW();
     
-//    exp2_RiSW_write_xy();
+    exp2_RiSW_write_xy();
     
-//    exp2_MR_write_xy();
+    exp2_MR_write_xy();
     
-//    exp2_GW_write_xy();
+    exp2_GW_write_xy();
     
     
     return 0;
