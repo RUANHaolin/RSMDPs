@@ -217,10 +217,6 @@ void runsave_rsmdps_speed(const function<RSMDPs(size_t nStates, size_t nActions)
 }
 
 
-
-
-
-
 // Get the run time for Gurobi for ROBUST MDP
 prec_t get_speed_gurobi_RMDP(RSMDPs& prob, const size_t nStates) {
 
@@ -282,8 +278,6 @@ prec_t get_speed_gurobi_RMDP(RSMDPs& prob, const size_t nStates) {
 }
 
 
-
-
 /*
  * @brief Computing RMDP time
  */
@@ -308,4 +302,12 @@ void run_rmdps_speed(const function<RSMDPs(size_t nStates, size_t nActions)>& pr
         cout << "States " << nStates << ", average time " << time_total/repetitions << endl;
     }
 }
+
+
+
+
+
+
+
+
 

@@ -15,6 +15,8 @@
 
 #include <chrono> // modification
 
+#include <iterator>
+
 
 // this is a function that samples s1,s2,a1, and a RV from Uni(0,1)
 tuple<size_t,size_t,size_t,prec_t> sampling_SSA_RV(const RSMDPs& prob){
@@ -32,6 +34,24 @@ tuple<size_t,size_t,size_t,prec_t> sampling_SSA_RV(const RSMDPs& prob){
 
 
     return {s_sample1,s_sample2,a_sample,probility};
+}
+
+
+vector<size_t> sampling_multiple_S_RV(const RSMDPs& prob, size_t n){
+    vector<size_t> indices_all; indices_all.reserve(prob.nStates);
+    for (size_t i = 0; i < prob.nStates; i++){
+        indices_all.push_back(i);
+    }
+    
+    vector<size_t> indices_s; indices_s.reserve(n);
+    std::sample(indices_all.begin(), indices_all.end(), std::back_inserter(indices_s), n,
+                    std::mt19937 {std::random_device{}()});
+//    std::cout << "The n random indices are " << endl;
+//    for (size_t i = 0; i < n; i++){
+//        cout << indices_s[i] << endl;
+//    }
+    
+    return indices_s;
 }
 
 
@@ -442,9 +462,17 @@ void PDA_dual_update(const RSMDPs& prob, PDA& pda) {
             break;
         }
         case PDA_block : {
-            auto [s_sample,s2,a1,RV] = sampling_SSA_RV(prob);
-            PDA_dual_update_fixed_s(prob, pda, s_sample);
-            //PDA_dual_update_fixed_s_Gurobi_check(prob, pda, s_sample);
+//            auto [s_sample,s2,a1,RV] = sampling_SSA_RV(prob);
+//            PDA_dual_update_fixed_s(prob, pda, s_sample);
+//            //PDA_dual_update_fixed_s_Gurobi_check(prob, pda, s_sample);
+            
+            // modified
+            size_t n = 2;
+            vector<size_t> indices = sampling_multiple_S_RV(prob, n);
+            for (size_t i = 0; i < n; i++){
+                PDA_dual_update_fixed_s(prob, pda, indices[i]);
+            }
+            
             break;
         }
         case PDA_block_plus : {

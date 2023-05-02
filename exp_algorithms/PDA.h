@@ -333,6 +333,9 @@ public:
 tuple<size_t,size_t,size_t,prec_t> sampling_SSA_RV(const RSMDPs& prob);
 
 
+vector<size_t> sampling_multiple_S_RV(const RSMDPs& prob, size_t n);
+
+
 
 void PDA_primal_update(const RSMDPs& prob, PDA& pda);
 
