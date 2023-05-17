@@ -217,9 +217,10 @@ void runsave_rsmdps_speed(const function<RSMDPs(size_t nStates, size_t nActions)
 }
 
 
-// Get the run time for Gurobi for ROBUST MDP
-prec_t get_speed_gurobi_RMDP(RSMDPs& prob, const size_t nStates) {
 
+
+// Get the run time for Gurobi for ROBUST MDP
+prec_t get_speed_gurobi_RMDP(RSMDPs& prob, const size_t nStates){
     default_random_engine generator;
     generator.seed(chrono::system_clock::now().time_since_epoch().count());
     // comment this if you need the same instance all the time.
@@ -228,46 +229,25 @@ prec_t get_speed_gurobi_RMDP(RSMDPs& prob, const size_t nStates) {
     // solve rmdps
     auto start_gurobi_rmdp  = std::chrono::high_resolution_clock::now();
     
-    // construct value function
-    numvec v0(prob.nStates, 0.0);
-    numvec v1(prob.nStates, 0.0);
     
-    prec_t err = 10.0;
+    vector<vector<numvec>> P = prob.P;
     
-    prec_t kappa = distribution(generator);
-    // value iteration
-    while (err > 1e-3){
-        for (size_t s = 0; s < prob.nStates; s++) {
-            //construct Bellman eq
-            BellmanEq_s Bellman_instance;
-            Bellman_instance.v0 = v0;
-            
-            // below assume A = S
-            vector<numvec> r_s_vec;
-            for (size_t s = 0; s < prob.nStates; s++){
-                r_s_vec.push_back(prob.r[s]);
-            }
-            Bellman_instance.r_s = r_s_vec;
-            
-            Bellman_instance.p_bar  = prob.P[s];
-            Bellman_instance.lambda = prob.gamma;
-            
-            Bellman_instance.kappa = kappa;
-            
-            Bellman_instance.vi_epsilon = 1e-5; // useless
-            
-            Bellman_instance.createAuxiliaryVar();
-            
-            //update
-            auto [policy_temp, v1_s_temp] = srect_solve_gurobi_l1(Bellman_instance);
-            v1[s] = v1_s_temp;
-        }
-        err = 0.0;
-        for (size_t s = 0; s < prob.nStates; s++) {
-            err = max(err, abs(v0[s]-v1[s]));
-            v0[s] = v1[s];
+    size_t nActions = prob.nActions;
+    
+    numvec r; r.reserve(prob.nActions * prob.nStates);
+    for ( size_t s = 0; s < prob.nStates; s++ ) {
+        for ( size_t a = 0; a < prob.nActions; a++ ){
+            r.push_back(prob.r[s][a]);
         }
     }
+    
+    prec_t gamma = prob.gamma;
+    
+    prec_t radius = distribution(generator);
+    
+    
+    auto [ V_rmdp, policy_rmdp ] = VI_rmdp_sarect(P, prob.nStates, prob.nActions, r, gamma, radius);
+    
     auto finish_gurobi_rmdp = std::chrono::high_resolution_clock::now();
     prec_t dur_gurobi_rmdp = std::chrono::duration_cast<std::chrono::milliseconds> (finish_gurobi_rmdp - start_gurobi_rmdp).count();
 
@@ -275,7 +255,11 @@ prec_t get_speed_gurobi_RMDP(RSMDPs& prob, const size_t nStates) {
     
     
     return dur_gurobi_rmdp;
+    
 }
+
+
+
 
 
 /*
@@ -289,14 +273,18 @@ void run_rmdps_speed(const function<RSMDPs(size_t nStates, size_t nActions)>& pr
         size_t nActions = nStates_ls[s];
 
         prec_t time_total = 0.0;
+        
         for (size_t i = 0; i < repetitions; i++) {
             cout << "States " << nStates << ", Actions " << nActions << endl;
 
             RSMDPs instance = prob_gen(nStates, nActions);
-                
+
+            
             auto time_temp =  get_speed_gurobi_RMDP(instance, nStates);
             
+            
             time_total += time_temp;
+
         }
         
         cout << "States " << nStates << ", average time " << time_total/repetitions << endl;

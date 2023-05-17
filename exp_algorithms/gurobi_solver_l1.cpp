@@ -16,110 +16,187 @@
 #include <sstream>
 
 
-pair<numvec, double> srect_solve_gurobi_l1(const BellmanEq_s& instanceS) {
-    const vector<numvec>& z     = instanceS.b;
-    const vector<numvec>& pbar  = instanceS.p_bar;
-    const prec_t&         kappa = instanceS.kappa;
-    const vector<numvec>& w     = instanceS.sigma;
-    
+
+numvec sarect_solve_gurobi_l1(size_t S, numvec V, numvec p_hat, prec_t radius){
     // general constants values
     const double inf = numeric_limits<prec_t>::infinity();
-    
-    assert(pbar.size() == z.size());
-    assert(w.empty() || w.size() == z.size());
-    
-    // helpful numbers of actions
-    const size_t nAction = pbar.size();
-    // number of transition states for each action
-    vector<size_t> statecounts(nAction);
-    transform(pbar.cbegin(), pbar.cend(), statecounts.begin(), [](const numvec& v) {return v.size();});
-    // the number of states per action does not need to be the same
-    // (when transitions are sparse)
-    const size_t nstateactions = accumulate(statecounts.cbegin(), statecounts.cend(), size_t(0));
-    
-    /*
-    // This is used to debug the problem with Gurboi, it seems to be a license problem
-    try {
-        GRBModel model = GRBModel(env);
-        //GRBModel model = GRBModel(env, argv[1]);
-    } catch (GRBException e) {std::cout << e.getMessage(); // information from length_error is lost
-    }
-    return pair<numvec, double>(instanceS.b[0],0);
-    */
-    
+
     GRBEnv env = GRBEnv(true);
     // GRBEnv env = GRBEnv();
-    
+
     // make sure it is run in a single thread for a fair comparison
     env.set(GRB_IntParam_OutputFlag, 0);
     env.set(GRB_IntParam_Threads, 1);
     env.start();
     // construct the LP model
     GRBModel model = GRBModel(env);
+
+
+    /*********************************************************************
+             Create varables
+             see https://support.gurobi.com/hc/en-us/community/posts/4414331624849-Create-multi-dimensional-variables-read-data-file-in-C-
+    *********************************************************************/
     
-    // Create varables: duals of the nature problem
-    auto x = unique_ptr<GRBVar[]>(model.addVars(numvec(nAction, -inf).data(), nullptr,
-                                                nullptr,
-                                                vector<char>(nAction, GRB_CONTINUOUS).data(),
-                                                nullptr, int(nAction)));
-    //  outer loop: actions, inner loop: next state
-    auto yp = unique_ptr<GRBVar[]>(model.addVars(nullptr, nullptr,
-                                                 nullptr,
-                                                 vector<char>(nstateactions, GRB_CONTINUOUS).data(),
-                                                 nullptr, int(nstateactions)));
-    auto yn = unique_ptr<GRBVar[]>(model.addVars(nullptr, nullptr,
-                                                 nullptr,
-                                                 vector<char>(nstateactions, GRB_CONTINUOUS).data(),
-                                                 nullptr, int(nstateactions)));
+    auto p = unique_ptr<GRBVar[]>(model.addVars(numvec(S, 0.0).data(), nullptr,
+        nullptr,
+        vector<char>(S, GRB_CONTINUOUS).data(),
+        nullptr, int(S)));
     
-    auto lambda = model.addVar(0, inf, -kappa, GRB_CONTINUOUS, "lambda");
+    auto y = unique_ptr<GRBVar[]>(model.addVars(nullptr, nullptr,
+        nullptr,
+        vector<char>(S, GRB_CONTINUOUS).data(),
+        nullptr, int(S)));
     
-    // primal variables for the nature
-    auto d = unique_ptr<GRBVar[]>(model.addVars(numvec(nAction, 0).data(), nullptr,
-                                                numvec(nAction, 0).data(),
-                                                vector<char>(nAction, GRB_CONTINUOUS).data(),
-                                                nullptr, int(nAction)));
+    
+    /*********************************************************************
+             Build Model
+    *********************************************************************/
+
     // objective
     GRBLinExpr objective;
+
+    // constraints terms
+    GRBLinExpr e_y;                     // e^\top y
+    GRBLinExpr e_p;                     // e^\top p
+
     
-    size_t i = 0;
-    // constraints dual to variables of the inner problem
-    for (size_t actionid = 0; actionid < nAction; actionid++) {
-        objective += x[actionid];
-        for (size_t stateid = 0; stateid < statecounts[actionid]; stateid++) {
-            // objective
-            objective += -pbar[actionid][stateid] * yp[i];
-            objective += pbar[actionid][stateid] * yn[i];
-            // dual for p
-            model.addConstr(x[actionid] - yp[i] + yn[i] <= d[actionid] * z[actionid][stateid]);
-            // dual for z
-            double weight = w.size() > 0 ? w[actionid][stateid] : 1.0;
-            model.addConstr(-lambda * weight + yp[i] + yn[i] <= 0);
-            // update the counter (an absolute index for each variable)
-            i++;
-        }
+    for ( size_t s = 0; s < S; s++ ){
+        e_y += y[s];
+        e_p += p[s];
+        model.addConstr( p[s] - p_hat[s] <= y[s] );
+        model.addConstr( p[s] - p_hat[s] >= -y[s] );
+        objective += p[s] * V[s];
     }
-    objective += -lambda * kappa;
-    
-    // constraint on the policy pi
-    GRBLinExpr ones;
-    ones.addTerms(numvec(nAction, 1.0).data(), d.get(), int(nAction));
-    model.addConstr(ones, GRB_EQUAL, 1);
+    model.addConstr( e_y <= radius );
+    model.addConstr( e_p == 1.0 );
     
     // set objective
-    model.setObjective(objective, GRB_MAXIMIZE);
+    model.setObjective(objective, GRB_MINIMIZE);
     
+//    auto start_gurobi_runtimeTimer  = std::chrono::high_resolution_clock::now();
     // run optimization
     model.optimize();
-    
+//    auto finish_gurobi_runtimeTimer = std::chrono::high_resolution_clock::now();
+//    prec_t dur_gurobi_runtimeTimer = std::chrono::duration_cast<std::chrono::milliseconds> (finish_gurobi_runtimeTimer - start_gurobi_runtimeTimer).count();
+//    cout << "time (timer) used :" << dur_gurobi_runtimeTimer << endl;
     // retrieve policy values
-    numvec policy(nAction);
-    for (size_t i = 0; i < nAction; i++) {
-        policy[i] = d[i].get(GRB_DoubleAttr_X);
+    numvec p_star; p_star.reserve(S);
+
+
+    for (size_t s = 0; s < S; s++) {
+        p_star.push_back(p[s].get(GRB_DoubleAttr_X));
     }
     
-    // retrieve the worst-case response values
-    return {policy, model.get(GRB_DoubleAttr_ObjVal)};
+//    double Runtime = model.get(GRB_DoubleAttr_Runtime);
+    
+    
+//    cout << "Runtime: " << Runtime << endl;
+
+//     retrieve the worst-case response values
+    return p_star ;
+    
 }
+
+
+pair<numvec, vector<int>> VI_rmdp_sarect(const vector<vector<numvec>> &P, int S, int A, const numvec &r, double gamma, double radius, int max_iter, double tol){
+    numvec V(S, 1000.0);                    // initialize values
+    vector<int> policy; policy.reserve(S);
+    numvec z; z.reserve(S);
+    for ( int s = 0; s < S; s++ ){
+        z.push_back(gamma * V[s]);
+    }
+    
+    // compute the robust value function (grb)
+    for ( int iter = 0; iter < max_iter; iter++ ){
+        numvec newV; newV.reserve(S);
+        for ( int s = 0; s < S; s++ ){
+            double BV_max = -99.0;
+            for ( int a = 0; a < A; a++ ){
+                numvec p = sarect_solve_gurobi_l1(S, V, P[s][a], radius);
+                double BV_a = r[s*A+a];
+                for ( int s2 = 0; s2 < S; s2++ ){
+                    BV_a += p[s2] * z[s2];
+                }
+                if ( BV_a > BV_max ){
+                    BV_max = BV_a;
+                }
+            }
+            newV.push_back(BV_max);
+        }
+
+
+        double Vdiff = 0.0;
+        for ( int s = 0; s < S; s++ ){
+            if ( abs(newV[s]-V[s]) > Vdiff ){
+                Vdiff = abs(newV[s]-V[s]);
+            }
+        }
+        V = newV;
+        for ( int s = 0; s < S; s++ ){
+            z[s] = gamma * V[s];
+        }
+        if ( Vdiff < tol ){
+            break;
+        }
+    }
+    
+    
+//    // compute the robust value function (raam)
+//    for ( int iter = 0; iter < max_iter; iter++ ){
+//        numvec newV; newV.reserve(S);
+//        vector<size_t> index = argsort(z);
+//        for ( int s = 0; s < S; s++ ){
+//            double BV_max = -99.0;
+//            for ( int a = 0; a < A; a++ ){
+//                numvec p = lp_raam(S, index, P[s][a], radius);      // solve the linear program by Marek's method in the RAAM paper
+//                double BV_a = r[s*A+a];
+//                for ( int s2 = 0; s2 < S; s2++ ){
+//                    BV_a += p[s2] * z[s2];
+//                }
+//                if ( BV_a > BV_max ){
+//                    BV_max = BV_a;
+//                }
+//            }
+//            newV.push_back(BV_max);
+//        }
+//        double Vdiff = 0.0;
+//        for ( int s = 0; s < S; s++ ){
+//            if ( abs(newV[s]-V[s]) > Vdiff ){
+//                Vdiff = abs(newV[s]-V[s]);
+//            }
+//        }
+//        V = newV;
+//        for ( int s = 0; s < S; s++ ){
+//            z[s] = gamma * V[s];
+//        }
+//        if ( Vdiff < tol ){
+//            break;
+//        }
+//    }
+    
+    
+    
+    // compute the policy based on the robust value function
+    for ( int s = 0; s < S; s++ ){
+        double BV_max = -99.0;
+        int idx_max = 0;
+        for ( int a = 0; a < A; a++ ){
+            double BV_a = r[s*A+a];
+            for ( int s2 = 0; s2 < S; s2++ ){
+                BV_a += P[s][a][s2] * gamma * V[s2];
+            }
+            if ( BV_a > BV_max ){
+                BV_max = BV_a;
+                idx_max = a;
+            }
+        }
+        policy.push_back(idx_max);
+    }
+    return { V, policy };
+}
+
+
+
+
 
 

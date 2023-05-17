@@ -13,7 +13,7 @@
 #include "gurobi_c++.h"
 #include <random>
 
-#include <chrono> // modification
+#include <chrono>
 
 #include <iterator>
 
@@ -466,7 +466,7 @@ void PDA_dual_update(const RSMDPs& prob, PDA& pda) {
 //            PDA_dual_update_fixed_s(prob, pda, s_sample);
 //            //PDA_dual_update_fixed_s_Gurobi_check(prob, pda, s_sample);
             
-            // modified
+            // we sample 2 indices at every iteration
             size_t n = 2;
             vector<size_t> indices = sampling_multiple_S_RV(prob, n);
             for (size_t i = 0; i < n; i++){
@@ -512,9 +512,7 @@ pair<numvec,size_t> solver_PDA(const RSMDPs& prob, const PDA_type algType, const
     //pda.u  = pi;
     //PDA_dual_update(prob, pda);
     
-    /////////////////////////////////////////////////////////////
-    //////////////////////Siyu_update////////////////////////////
-    /////////////////////////////////////////////////////////////
+
     size_t nActions;      // get the number of actions
     size_t nStates;       // get the number of states
     nStates = prob.nStates;
@@ -548,9 +546,7 @@ pair<numvec,size_t> solver_PDA(const RSMDPs& prob, const PDA_type algType, const
         }
    }
     size_t iter_cnt = 0;
-    /////////////////////////////////////////////////////////////
-    //////////////////////Siyu_update////////////////////////////
-    /////////////////////////////////////////////////////////////
+
 
     // 1st iteration
     PDA_primal_update(prob, pda);

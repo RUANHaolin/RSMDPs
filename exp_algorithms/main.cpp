@@ -15,10 +15,7 @@ using namespace std;
 
 int main() {
 
-
-    sizvec nStates_ls = {10,11,12,13,14,15,16,17};  // S = A
-
-    
+    sizvec nStates_ls = {10,13,15,17};  // S = A
     
     size_t nRepeats = 100;               // number of instances we repeat for each setting
     
