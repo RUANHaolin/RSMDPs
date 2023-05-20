@@ -217,8 +217,6 @@ void runsave_rsmdps_speed(const function<RSMDPs(size_t nStates, size_t nActions)
 }
 
 
-
-
 // Get the run time for Gurobi for ROBUST MDP
 prec_t get_speed_gurobi_RMDP(RSMDPs& prob, const size_t nStates){
     default_random_engine generator;
@@ -259,6 +257,42 @@ prec_t get_speed_gurobi_RMDP(RSMDPs& prob, const size_t nStates){
 }
 
 
+// Get the run time for Gurobi for ROBUST MDP (sum up runtimes)
+tuple<prec_t, prec_t> get_speed_gurobi_RMDP_rumtimes(RSMDPs& prob, const size_t nStates){
+    default_random_engine generator;
+    generator.seed(chrono::system_clock::now().time_since_epoch().count());
+    // comment this if you need the same instance all the time.
+    uniform_real_distribution<double> distribution(0.0, 0.3);
+    
+    // solve rmdps
+    auto start_gurobi_rmdp  = std::chrono::high_resolution_clock::now();
+    
+    vector<vector<numvec>> P = prob.P;
+    
+    size_t nActions = prob.nActions;
+    
+    numvec r; r.reserve(prob.nActions * prob.nStates);
+    for ( size_t s = 0; s < prob.nStates; s++ ) {
+        for ( size_t a = 0; a < prob.nActions; a++ ){
+            r.push_back(prob.r[s][a]);
+        }
+    }
+    
+    prec_t gamma = prob.gamma;
+    
+    prec_t radius = distribution(generator);
+    
+//    auto [ V_rmdp, policy_rmdp ] = VI_rmdp_sarect(P, prob.nStates, prob.nActions, r, gamma, radius);
+    auto [ V_rmdp, policy_rmdp, runtime ] = VI_rmdp_sarect_runtimes(P, prob.nStates, prob.nActions, r, gamma, radius);
+    
+    auto finish_gurobi_rmdp = std::chrono::high_resolution_clock::now();
+    prec_t dur_gurobi_rmdp = std::chrono::duration_cast<std::chrono::milliseconds> (finish_gurobi_rmdp - start_gurobi_rmdp).count();
+
+    cout << "runtime used :" << runtime << endl;
+    
+    return {dur_gurobi_rmdp, runtime };
+    
+}
 
 
 
@@ -273,21 +307,23 @@ void run_rmdps_speed(const function<RSMDPs(size_t nStates, size_t nActions)>& pr
         size_t nActions = nStates_ls[s];
 
         prec_t time_total = 0.0;
-        
+        prec_t runtime_total = 0.0;
         for (size_t i = 0; i < repetitions; i++) {
             cout << "States " << nStates << ", Actions " << nActions << endl;
 
             RSMDPs instance = prob_gen(nStates, nActions);
 
             
-            auto time_temp =  get_speed_gurobi_RMDP(instance, nStates);
+
+            auto [time_temp, runtime_temp] =  get_speed_gurobi_RMDP_rumtimes(instance, nStates);
             
             
             time_total += time_temp;
-
+            runtime_total += runtime_temp;
         }
         
-        cout << "States " << nStates << ", average time " << time_total/repetitions << endl;
+//        cout << "States " << nStates << ", average time " << time_total/repetitions << endl;
+        cout << "States " << nStates << ", average runtime " << runtime_total/repetitions << endl;
     }
 }
 
